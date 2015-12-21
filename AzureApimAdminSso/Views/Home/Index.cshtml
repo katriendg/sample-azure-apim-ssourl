@@ -1,0 +1,27 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+@{
+    if (ViewBag.HasAccess)
+    {
+        <div class="jumbotron">
+            <h1>Azure API Management - SSO Sample</h1>
+            <p class="lead">You can now click the link below to login into Publisher portal.</p>
+            <p>
+
+                @Html.ActionLink("Login", "Login", "Home", new { area = "" }, new { @class = "btn btn-primary btn-lg" })
+
+            </p>
+
+        </div>
+    }
+    else
+    {
+        <div class="jumbotron">
+            <h1>Azure API Management - SSO Sample</h1>
+            <p class="lead">No access</p>
+        </div>
+    }
+}
+
+

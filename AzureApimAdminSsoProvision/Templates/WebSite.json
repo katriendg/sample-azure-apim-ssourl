@@ -1,0 +1,137 @@
+﻿{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+  "parameters": {
+    "webSiteName": {
+      "type": "string",
+      "minLength": 8
+    },
+    "hostingPlanName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sku": {
+      "type": "string",
+      "allowedValues": [
+        "Free",
+        "Shared",
+        "Basic",
+        "Standard",
+        "Premium"
+      ],
+      "defaultValue": "Free"
+    },
+    "workerSize": {
+      "type": "string",
+      "allowedValues": [
+        "0",
+        "1",
+        "2"
+      ],
+      "defaultValue": "0"
+    },
+    "apimTenantName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "apimAdGroupId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "apimSas": {
+      "type": "securestring",
+      "minLength": 1
+    },
+    "_artifactsLocation": {
+      "type": "string"
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring"
+    },
+    "ApimDeployPackageFolder": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "WebDeploy package location. This path is relative to the _artifactsLocation parameter"
+      }
+    },
+    "ApimDeployPackageFileName": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "Name of the webdeploy package"
+      }
+    }
+  },
+    "resources": [
+        {
+            "apiVersion": "2014-06-01",
+            "name": "[parameters('hostingPlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "HostingPlan"
+            },
+            "properties": {
+                "name": "[parameters('hostingPlanName')]",
+                "sku": "[parameters('sku')]",
+                "workerSize": "[parameters('workerSize')]",
+                "numberOfWorkers": 1
+            }
+        },
+        {
+            "apiVersion": "2014-06-01",
+            "name": "[parameters('webSiteName')]",
+            "type": "Microsoft.Web/sites",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]": "Resource",
+                "displayName": "Website"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]"
+            ],
+          "properties": {
+            "name": "[parameters('webSiteName')]",
+            "serverFarm": "[parameters('hostingPlanName')]"
+          },
+          "resources": [
+            {
+              "name": "MSDeploy",
+              "type": "extensions",
+              "location": "[resourceGroup().location]",
+              "apiVersion": "2015-08-01",
+              "dependsOn": [
+                "[concat('Microsoft.Web/sites/', parameters('webSiteName'))]"
+              ],
+              "tags": {
+                "displayName": "ApimDeploy"
+              },
+              "properties": {
+                "packageUri": "[concat(parameters('_artifactsLocation'), '/', parameters('ApimDeployPackageFolder'), '/', parameters('ApimDeployPackageFileName'), parameters('_artifactsLocationSasToken'))]",
+                "dbType": "None",
+                "connectionString": "",
+                "setParameters": {
+                  "IIS Web Application Name": "[parameters('webSiteName')]"
+                }
+              }
+            },
+            {
+              "apiVersion": "2015-08-01",
+              "name": "appsettings",
+              "location": "[resourceGroup().location]",
+              "type": "config",
+              "dependsOn": [
+                "[concat('Microsoft.Web/sites/', parameters('webSiteName'))]",
+                "[concat('Microsoft.Web/Sites/', parameters('webSiteName'), '/Extensions/MSDeploy')]"
+              ],
+              "properties": {
+                "ApimTenant": "[parameters('apimTenantName')]",
+                "ApimGroupClaim": "[parameters('apimAdGroupId')]",
+                "ApimSas": "[parameters('apimSas')]"
+              }
+            }
+          ]
+        }
+    ]
+}

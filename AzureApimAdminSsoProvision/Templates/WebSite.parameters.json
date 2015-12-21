@@ -1,0 +1,30 @@
+﻿{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "hostingPlanName": {
+      "value": "myASPsample"
+    },
+    "webSiteName": {
+      "value": "azapimsso1"
+    },
+    "apimTenantName": {
+      "value": "katriendg"
+    },
+    "apimAdGroupId": {
+      "value": "c45b47a3-a7f7-44ee-97eb-3a17858d5c16"
+    },
+    "ApimDeployPackageFolder": {
+      "value": "AzureApimAdminSso"
+    },
+    "ApimDeployPackageFileName": {
+      "value": "package.zip"
+    },
+    "ApimSas": {
+      "value": ""
+    },
+    "sku": {
+      "value": "Free"
+    }
+  }
+}
